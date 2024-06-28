@@ -1,21 +1,21 @@
-resource "kubernetes_persistent_volume" "jenkins_pv" {
-  metadata {
-    name = "jenkins-pv"
-  }
-  spec {
-    capacity = {
-      storage = "10Gi"
-    }
-    access_modes                     = ["ReadWriteOnce"]
-    persistent_volume_reclaim_policy = "Retain"
+# resource "kubernetes_persistent_volume" "jenkins_pv" {
+#   metadata {
+#     name = "jenkins-pv"
+#   }
+#   spec {
+#     capacity = {
+#       storage = "10Gi"
+#     }
+#     access_modes                     = ["ReadWriteOnce"]
+#     persistent_volume_reclaim_policy = "Retain"
 
-    persistent_volume_source {
-      host_path {
-        path = "/mnt/data"
-      }
-    }
-  }
-}
+#     persistent_volume_source {
+#       host_path {
+#         path = "/mnt/data"
+#       }
+#     }
+#   }
+# }
 
 resource "kubernetes_persistent_volume_claim" "jenkins_pvc" {
   metadata {
@@ -60,6 +60,11 @@ resource "kubernetes_deployment" "jenkins" {
           port {
             container_port = 8080
           }
+          
+          volume_mount {
+            name       = "jenkins-home"
+            mount_path = "/var/jenkins_home"
+          }
 
           volume_mount {
             name       = "docker-daemon"
@@ -71,6 +76,12 @@ resource "kubernetes_deployment" "jenkins" {
           host_path {
             path = "/var/run/docker.sock"
           }
+
+          
+        }
+        volume {
+          name = "jenkins-home"
+          empty_dir {}
         }
       }
     }
